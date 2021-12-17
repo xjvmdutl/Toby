@@ -8,11 +8,28 @@ import java.sql.SQLException;
 
 
 
-public abstract class UserDao {
-	
-	
+public class UserDao {
+	/*
+	private SimpleConnectionMaker simpleConnectionMaker; //초기 한번만 오브젝트를 만들어 저장
+
+	public UserDao() {
+		this.simpleConnectionMaker = new SimpleConnectionMaker();
+	}
+	*/
+	private ConnectionMaker connectionMaker;
+
+	public UserDao(ConnectionMaker connectionMaker){		//UserDao를 생성하는 쪽에다가 ConnectionMaker 타입을 책임을 맡겼다
+		//connectionMaker = new DConnectionMaker(); // 생성자를 호출해서 오브젝트를 생성하는 코드가 남아있다.
+		//초기 한번은 어떤 클래스의 오브젝트를 사용할지를 결정하는 코드는 제거되지 않았다.
+		//UserDao가 어떤 ConnectionMaker 구현 클래스의 오브젝트를 이용하게 할지를 결정하는 코드가 남았다.
+		this.connectionMaker = connectionMaker;
+
+	}
+
 	public void add(User user) throws SQLException, ClassNotFoundException {
-		Connection c = getConnection(); //메소드 분리 패턴
+		//Connection c = getConnection(); //메소드 분리 패턴
+		//Connection c = simpleConnectionMaker.makeNewConnection(); //UserDao 가 DB 커넥션을 가져오는 정보를 너무 많이 알고있다
+		Connection c = connectionMaker.makeNewConnection();
 		PreparedStatement ps = c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
 		ps.setString(1, user.getId());
 		ps.setString(2, user.getName());
@@ -24,7 +41,7 @@ public abstract class UserDao {
 	}
 	
 	public User get(String id) throws SQLException, ClassNotFoundException {
-		Connection c = getConnection();
+		Connection c = connectionMaker.makeNewConnection();
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
 		
@@ -41,22 +58,7 @@ public abstract class UserDao {
 		return user;
 	}
 	
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		UserDao dao = new NUserDao();
-		User user = new User();
-		user.setId("whoteShip");
-		user.setName("백기선");
-		user.setPassword("married");
-		
-		dao.add(user);
-		
-		System.out.println(user.getId() + " 등록 성공");
-		
-		User user2 = dao.get(user.getId());
-		System.out.println(user2.getName());
-		System.out.println(user2.getPassword());
-		System.out.println(user2.getId() + " 조회 성공");
-	}
+
 	 /*
 	 private Connection getConnection() throws ClassNotFoundException,SQLException {
 		 Class.forName("org.h2.Driver"); 
@@ -64,5 +66,5 @@ public abstract class UserDao {
 	  	 return c; 
   	 }
 	 */
-	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+	//public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 }
