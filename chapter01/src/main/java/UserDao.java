@@ -17,6 +17,7 @@ public abstract class UserDao {
 		ps.setString(1, user.getId());
 		ps.setString(2, user.getName());
 		ps.setString(3, user.getPassword());
+
 		ps.executeUpdate();
 		ps.close();
 		c.close();
