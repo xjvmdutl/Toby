@@ -20,13 +20,27 @@ public class UserDao {
 	*/
 	private ConnectionMaker connectionMaker;// 초기에 설정하면 사용중에는 바뀌지 않는 읽기전용 인스턴스 변수
 	//자신이 사용하는 다른 싱글톤 빈을 저장하려는 용도라면 인스턴스 변수를 사용해도 좋다.
+
+
+
 	private Connection c; //매번 새로운 값으로 바뀌는 정보를 담은 인스턴스 변수, 심각한 문제 발생
 	private User user;
 
 	public UserDao(ConnectionMaker connectionMaker){		//UserDao를 생성하는 쪽에다가 ConnectionMaker 타입을 책임을 맡겼다
 		//connectionMaker = new DConnectionMaker(); // 생성자를 호출해서 오브젝트를 생성하는 코드가 남아있다.
+		//설계시점에 DConnectionMaker 라는 구체적인 클래스의 존재를 알고 있어야한다.
 		//초기 한번은 어떤 클래스의 오브젝트를 사용할지를 결정하는 코드는 제거되지 않았다.
 		//UserDao가 어떤 ConnectionMaker 구현 클래스의 오브젝트를 이용하게 할지를 결정하는 코드가 남았다.
+
+		//의존관계주입은 꼭 생성자에서 해야되는것은 아니다.
+		//1.수정자를 통한 주입, 2.일반 메소드를 통한 주입 2가지 방식이 있다
+		this.connectionMaker = connectionMaker;
+	}
+
+	public UserDao() {
+	}
+
+	public void setConnectionMaker(ConnectionMaker connectionMaker){
 		this.connectionMaker = connectionMaker;
 	}
 	/*
