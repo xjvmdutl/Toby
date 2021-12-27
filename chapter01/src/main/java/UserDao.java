@@ -1,5 +1,6 @@
 
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,6 +23,7 @@ public class UserDao {
 	//자신이 사용하는 다른 싱글톤 빈을 저장하려는 용도라면 인스턴스 변수를 사용해도 좋다.
 
 
+	private DataSource dataSource;
 
 	private Connection c; //매번 새로운 값으로 바뀌는 정보를 담은 인스턴스 변수, 심각한 문제 발생
 	private User user;
@@ -43,6 +45,10 @@ public class UserDao {
 	public void setConnectionMaker(ConnectionMaker connectionMaker){
 		this.connectionMaker = connectionMaker;
 	}
+	public void setDataSource(DataSource dataSource){
+		this.dataSource = dataSource;
+	}
+
 	/*
 	public static synchronized UserDao getInstance(){
 		//싱글톤 패턴을 단점
@@ -62,7 +68,8 @@ public class UserDao {
 	public void add(User user) throws SQLException, ClassNotFoundException {
 		//Connection c = getConnection(); //메소드 분리 패턴
 		//Connection c = simpleConnectionMaker.makeNewConnection(); //UserDao 가 DB 커넥션을 가져오는 정보를 너무 많이 알고있다
-		this.c = connectionMaker.makeNewConnection();
+		//this.c = connectionMaker.makeNewConnection();
+		Connection c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
 		ps.setString(1, user.getId());
 		ps.setString(2, user.getName());
@@ -74,7 +81,7 @@ public class UserDao {
 	}
 	
 	public User get(String id) throws SQLException, ClassNotFoundException {
-		this.c = connectionMaker.makeNewConnection();
+		Connection c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
 		
