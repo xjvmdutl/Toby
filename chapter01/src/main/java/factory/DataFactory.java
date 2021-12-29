@@ -1,3 +1,6 @@
+package factory;
+
+import dao.UserDao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 

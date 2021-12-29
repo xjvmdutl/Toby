@@ -1,3 +1,9 @@
+package factory;
+
+import connectionMaker.ConnectionMaker;
+import connectionMaker.CountingConnectionMaker;
+import connectionMaker.DConnectionMaker;
+import dao.UserDao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

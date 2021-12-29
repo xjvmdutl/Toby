@@ -1,3 +1,9 @@
+package test;
+
+import connectionMaker.CountingConnectionMaker;
+import dao.UserDao;
+import entity.User;
+import factory.CountingDaoFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -8,7 +14,6 @@ public class UserDaoConnectionCountingTest {
         ApplicationContext context = new AnnotationConfigApplicationContext(CountingDaoFactory.class);
         UserDao dao = context.getBean("userDao",UserDao.class);
 
-        //Dao 사용코드
         User user = new User();
         user.setId("whiteShip");
         user.setName("백기선");

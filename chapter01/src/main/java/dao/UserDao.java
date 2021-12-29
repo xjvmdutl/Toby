@@ -1,4 +1,7 @@
+package dao;
 
+import connectionMaker.ConnectionMaker;
+import entity.User;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -11,12 +14,12 @@ import java.sql.SQLException;
 
 public class UserDao {
 
-	//private static UserDao INSTANCE; //싱글톤
+	//private static dao.UserDao INSTANCE; //싱글톤
 	/*
-	private SimpleConnectionMaker simpleConnectionMaker; //초기 한번만 오브젝트를 만들어 저장
+	private connectionMaker.SimpleConnectionMaker simpleConnectionMaker; //초기 한번만 오브젝트를 만들어 저장
 
-	public UserDao() {
-		this.simpleConnectionMaker = new SimpleConnectionMaker();
+	public dao.UserDao() {
+		this.simpleConnectionMaker = new connectionMaker.SimpleConnectionMaker();
 	}
 	*/
 	private ConnectionMaker connectionMaker;// 초기에 설정하면 사용중에는 바뀌지 않는 읽기전용 인스턴스 변수
@@ -28,11 +31,11 @@ public class UserDao {
 	private Connection c; //매번 새로운 값으로 바뀌는 정보를 담은 인스턴스 변수, 심각한 문제 발생
 	private User user;
 
-	public UserDao(ConnectionMaker connectionMaker){		//UserDao를 생성하는 쪽에다가 ConnectionMaker 타입을 책임을 맡겼다
-		//connectionMaker = new DConnectionMaker(); // 생성자를 호출해서 오브젝트를 생성하는 코드가 남아있다.
-		//설계시점에 DConnectionMaker 라는 구체적인 클래스의 존재를 알고 있어야한다.
+	public UserDao(ConnectionMaker connectionMaker){		//UserDao를 생성하는 쪽에다가 connectionMaker.ConnectionMaker 타입을 책임을 맡겼다
+		//connectionMaker = new connectionMaker.DConnectionMaker(); // 생성자를 호출해서 오브젝트를 생성하는 코드가 남아있다.
+		//설계시점에 connectionMaker.DConnectionMaker 라는 구체적인 클래스의 존재를 알고 있어야한다.
 		//초기 한번은 어떤 클래스의 오브젝트를 사용할지를 결정하는 코드는 제거되지 않았다.
-		//UserDao가 어떤 ConnectionMaker 구현 클래스의 오브젝트를 이용하게 할지를 결정하는 코드가 남았다.
+		//UserDao가 어떤 connectionMaker.ConnectionMaker 구현 클래스의 오브젝트를 이용하게 할지를 결정하는 코드가 남았다.
 
 		//의존관계주입은 꼭 생성자에서 해야되는것은 아니다.
 		//1.수정자를 통한 주입, 2.일반 메소드를 통한 주입 2가지 방식이 있다
@@ -50,7 +53,7 @@ public class UserDao {
 	}
 
 	/*
-	public static synchronized UserDao getInstance(){
+	public static synchronized dao.UserDao getInstance(){
 		//싱글톤 패턴을 단점
 		//1. 생성자가 private 로 제한되어 있으므로 싱글톤 클래스 자신만이 자기 오브젝트를 만들도록 제한되어 있다.
 		//2. 테스트가 힘들다.
@@ -60,14 +63,14 @@ public class UserDao {
 		
 
 		if(INSTANCE == null)
-			INSTANCE = new UserDao(???);
+			INSTANCE = new dao.UserDao(???);
 		return INSTANCE;
 		
 	}
 	 */
 	public void add(User user) throws SQLException, ClassNotFoundException {
 		//Connection c = getConnection(); //메소드 분리 패턴
-		//Connection c = simpleConnectionMaker.makeNewConnection(); //UserDao 가 DB 커넥션을 가져오는 정보를 너무 많이 알고있다
+		//Connection c = simpleConnectionMaker.makeNewConnection(); //dao.UserDao 가 DB 커넥션을 가져오는 정보를 너무 많이 알고있다
 		//this.c = connectionMaker.makeNewConnection();
 		Connection c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
