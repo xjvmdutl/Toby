@@ -15,7 +15,6 @@ public class UserDao {
 	private DataSource dataSource;
 
 	private Connection c;
-	private User user;
 
 	public UserDao(ConnectionMaker connectionMaker){
 		this.connectionMaker = connectionMaker;
@@ -49,16 +48,49 @@ public class UserDao {
 		ps.setString(1, id);
 		
 		ResultSet rs = ps.executeQuery();
-		rs.next();
-		this.user = new User();
-		this.user.setId(rs.getString("id"));
-		this.user.setName(rs.getString("name"));
-		this.user.setPassword(rs.getString("password"));
-		
+		User user = null;
+		if(rs.next()) {
+			user = new User();
+			user.setId(rs.getString("id"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+		}
 		rs.close();
 		ps.close();
 		c.close();
-		return this.user;
+
+		if(user == null)
+			throw new IllegalArgumentException();
+		return user;
 	}
 
+	/**
+	 * User 모든 레코드 삭제
+	 * @throws SQLException
+	 */
+	public void deleteAll() throws SQLException{
+		
+		Connection c = dataSource.getConnection();
+		PreparedStatement ps = c.prepareStatement("delete from users");
+		ps.executeUpdate();
+		ps.close();
+		c.close();
+	}
+
+	/**
+	 * User 테이블 레코드 갯수 반환
+	 * @return int
+	 * @throws SQLException
+	 */
+	public int getCount() throws SQLException{
+		Connection c = dataSource.getConnection();
+		PreparedStatement ps = c.prepareStatement("select count(*) from users");
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		int count = rs.getInt(1);
+		rs.close();
+		ps.close();
+		c.close();
+		return count;
+	}
 }
