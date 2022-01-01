@@ -6,17 +6,41 @@ import org.h2.jdbc.JdbcSQLException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+@RunWith(SpringJUnit4ClassRunner.class) //스프링의 테스트 컨택스트 프레임워크의 Junit 확장기능 지정
+@ContextConfiguration(locations = "/test-application.xml")
+//테스트 컨택스트가 자동으로 만들어줄 애플리케이션 컨택스트 위치 지정
+//여러개의 테스트 클래스가 존재하더라도 같은 어플리케이션 컨택스트를 사용하고 있더면 해당 어플리케이션 컨택스트를 공유하도록 해준다.
+//@DirtiesContext
+/**
+ * 테스트 DI를 테스트 클래스에서 별도로 주입하여 준다. => @DirtiesContext : 테스트 메소드에서 에플리케이션 컨택스트의 구성이나 상태를 변경함을 알려준다,해당 어노테이션이 붙는다면 애플리케이션 컨택스트 공유를 허용하지 않느다.
+ * 테스트를 위한 별도의 DI 설정(TESTXML파일 생성) => @ContextConfiguration(locations = "/test-application.xml")
+ * 별도의 DI 설정의 테스트 코드에서 진행 : @Autowire와같이 의존성 주입에 영향을 주지 않고 순수한 java code로 직접 주입하고 테스트가 가능하다.
+ */
 public class UserDaoTest {
-    
-    private UserDao dao;//로컬 변수였던 dao를 테스트 메소드에서 접근 하능하도록 인스턴스 변수로 변경
+
+    //테스트 컨택스트 프레임워크는 변수타입과 일치하는 컨텍스트 내의 빈을 찾아 주입해준다.
+    //private ApplicationContext context; //테스트 오브젝트가 만들어 지고 나면 자동으로 주입된다.
+    //어플리케이션 컨택스트는 초기화할때 자기 자신도 빈으로 등록하기에 이렇게 가지고 올수 있는것이다.
+    //단 Autowired 는 같은 타입의 빈이 2개 이상 등록되어 있을경우 타입만으로 어떤 빈을 가지고 올 지 알수 없기때문에, 문제가 발생할 수 있다.
+    //타입으로 어떤빈을 가지고 올지 선택할 수 없는경우 변수와 같은 이름의 빈이 있는지를 확인한다.
+    @Autowired
+    UserDao dao;//로컬 변수였던 dao를 테스트 메소드에서 접근 하능하도록 인스턴스 변수로 변경
+
     private User user1; //반복 사용되는 변수를 인스턴스 변수로 선언해 둔다.
     private User user2;
     private User user3;
@@ -34,8 +58,21 @@ public class UserDaoTest {
      */
     @Before
     public void setUp(){
-        ApplicationContext context = new GenericXmlApplicationContext("application.xml");
-        dao = context.getBean("userDao",UserDao.class);
+        //어플리케이션 컨텍스트가 테스트 메소드 갯수만큼 만들어 진다.
+        //어플리케이션 컨택스트처럼 생성에 많은 시간과 자원이 소모되는 경우에는 테스트 전체가 공유하는 오브젝트를 만들기도 한다.
+        //Junit 은 @BeforeClass 라는 테스트 클래스에 걸쳐 단 한번만 실행되는 스태틱메소드를 지원하지만, 스프링이 제공하는 어노테이션 테스트 지원기능을 사용하는것이 편하다.
+        //System.out.println(this.context);//Context을 주소는 매번 동일하지만 UserDaoTest 오브젝트는 매번 변화한다.
+        //System.out.println(this);
+
+        //ApplicationContext context = new GenericXmlApplicationContext("application.xml");
+        //dao = this.context.getBean("userDao",UserDao.class); //굳이 getBean으로 가지고 오지 말고 바로 @Autowired 로 가지고 올수 있다.
+        /*
+        DataSource dataSource = new SingleConnectionDataSource( //XML파일을 수정하지 않고도 테스트 코드를 통해 오브젝트 관계를 재구성 가능하다.
+                "jdbc:h2:tcp://localhost/~/toby","sa","",true
+        );
+
+        dao.setDataSource(dataSource);
+         */
         user1 = new User("gyumee","박성철","springno1");
         user2 = new User("leegw700","이길원","springno2");
         user3 = new User("bumjin","박범진","springno3");

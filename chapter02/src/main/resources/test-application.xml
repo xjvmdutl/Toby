@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" >
+    <bean id="connectionMaker" class="connectionMaker.DConnectionMaker" />
+    <bean id="userDao" class="dao.UserDao">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="org.h2.Driver" />
+        <property name="url" value="jdbc:h2:tcp://localhost/~/toby-test" />
+        <property name="username" value="sa" />
+    </bean>
+
+</beans>
