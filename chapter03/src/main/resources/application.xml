@@ -6,8 +6,15 @@
     <bean id="connectionMaker" class="connectionMaker.DConnectionMaker" />
     <bean id="userDao" class="dao.UserDao">
         <property name="dataSource" ref="dataSource" />
+        <!--
+        <property name="jdbcContext" ref="jdbcContext" />
+        !-->
     </bean>
-
+    <!--
+    <bean id="jdbcContext" class="strategy.JdbcContext" >
+        <property name="dataSource" ref="dataSource"  />
+    </bean>
+    !-->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
         <property name="driverClass" value="org.h2.Driver" />
         <property name="url" value="jdbc:h2:tcp://localhost/~/toby" />
