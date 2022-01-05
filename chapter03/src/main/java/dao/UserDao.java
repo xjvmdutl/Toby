@@ -39,6 +39,7 @@ public class UserDao {
 
 		this.jdbcContext = new JdbcContext();
 		this.jdbcContext.setDataSource(dataSource); // UserDao가 컨테이너 역할을 한다.
+
 		this.dataSource = dataSource;
 	}
 
@@ -105,6 +106,7 @@ public class UserDao {
 	 *
 	 * @throws SQLException
 	 */
+	/*
 	public void deleteAll() throws SQLException {
 		//해당 메소드가 클라이언트 코드가 되서 동작되어야 한다.
 		//StatementStrategy st = new DeleteAllStatement();
@@ -116,8 +118,23 @@ public class UserDao {
 			}
 		});
 	}
-
-
+	 */
+	public void deleteAll() throws SQLException {
+		this.jdbcContext.execute("delete from users");//변경되는 SQL 구문만 파라미터로 받는다.
+		//JdbcContext안에 콜백,클라이언트,템플릿이 모두 공존한다.
+	}
+	/**
+	//JDBCContext 안으로
+	private void executeSql(final String query) throws SQLException {
+		this.jdbcContext.workWithStatementStrategy(
+				new StatementStrategy() {
+					@Override
+					public PreparedStatement makePrepareStatement(Connection c) throws SQLException {
+						return c.prepareStatement(query);
+					}
+				});
+	}
+	*/
 	/*
 	private PreparedStatement makeStatement(Connection c) throws SQLException {
 		//자주 변경되는 부분을 메소드로 바꿨지만 오히려 반대로 되었다.
