@@ -1,6 +1,10 @@
 package dao;
 
 import connectionMaker.ConnectionMaker;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import strategy.JdbcContext;
 import strategy.StatementStrategy;
 import entity.User;
@@ -18,7 +22,10 @@ public class UserDao {
 
 	private Connection c;
 
-	private JdbcContext jdbcContext;
+	//private JdbcContext jdbcContext;
+
+	private JdbcTemplate jdbcTemplate;
+
 	/*
 	public void setJdbcContext(JdbcContext jdbcContext) {
 		this.jdbcContext = jdbcContext;
@@ -36,10 +43,11 @@ public class UserDao {
 	}
 
 	public void setDataSource(DataSource dataSource) {
-
+		/*
 		this.jdbcContext = new JdbcContext();
 		this.jdbcContext.setDataSource(dataSource); // UserDao가 컨테이너 역할을 한다.
-
+		*/
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.dataSource = dataSource;
 	}
 
@@ -66,6 +74,7 @@ public class UserDao {
 		}
 		 */
 		//jdbcContextWithStatementStrategy(
+		/*
 		this.jdbcContext.workWithStatementStrategy(
 				new StatementStrategy() {
 					@Override
@@ -77,6 +86,9 @@ public class UserDao {
 						return ps;
 					}
 		});
+		 */
+		//중간에 transaction-tx dependency 추가
+		this.jdbcTemplate.update("insert into users(id,name,password) values(?,?,?)", user.getId(), user.getName(), user.getPassword());
 	}
 
 	public User get(String id) throws SQLException {
@@ -120,8 +132,19 @@ public class UserDao {
 	}
 	 */
 	public void deleteAll() throws SQLException {
-		this.jdbcContext.execute("delete from users");//변경되는 SQL 구문만 파라미터로 받는다.
+		//this.jdbcContext.execute("delete from users");//변경되는 SQL 구문만 파라미터로 받는다.
 		//JdbcContext안에 콜백,클라이언트,템플릿이 모두 공존한다.
+		/*
+		this.jdbcTemplate.update(
+			new PreparedStatementCreator() {
+				@Override
+				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+					return connection.prepareStatement("delete from users");
+				}
+			}
+		);
+		 */
+		this.jdbcTemplate.update("delete from users"); //내장 콜백 사용
 	}
 	/**
 	//JDBCContext 안으로
@@ -149,6 +172,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public int getCount() throws SQLException{
+		/*
 		Connection c = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -180,5 +204,24 @@ public class UserDao {
 				}
 			}
 		}
+		 */
+		/*
+		return this.jdbcTemplate.query(
+				//콜백 2개 필요
+				new PreparedStatementCreator() {
+					@Override
+					public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+						return connection.prepareStatement("select count(*) from users");
+					}
+				}, new ResultSetExtractor<Integer>() {  //resultSet을 받아 추출한 값을 리턴한다 //ResultSet으로 부터 값 추출
+					@Override
+					public Integer extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+						resultSet.next();
+						return resultSet.getInt(1);
+					}
+				}
+		);
+		 */
+		return this.jdbcTemplate.queryForInt("select count(*) from users");
 	}
 }
