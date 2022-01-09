@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import strategy.JdbcContext;
 import strategy.StatementStrategy;
 import entity.User;
@@ -14,33 +15,47 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 
 public class UserDao {
-	private ConnectionMaker connectionMaker;
-	private DataSource dataSource;
+	//private ConnectionMaker connectionMaker;
+	//private DataSource dataSource;
 
-	private Connection c;
+	//private Connection c;
 
 	//private JdbcContext jdbcContext;
 
 	private JdbcTemplate jdbcTemplate;
 
+	private RowMapper<User> userMapper = new RowMapper<User>() {
+		@Override
+		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+			User user = new User();
+			user.setId(rs.getString("id"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+			return user;
+		}
+	};
 	/*
 	public void setJdbcContext(JdbcContext jdbcContext) {
 		this.jdbcContext = jdbcContext;
 	}
 	*/
+	/*
 	public UserDao(ConnectionMaker connectionMaker) {
 		this.connectionMaker = connectionMaker;
 	}
+	 */
 
 	public UserDao() {
 	}
-
+	/*
 	public void setConnectionMaker(ConnectionMaker connectionMaker) {
 		this.connectionMaker = connectionMaker;
 	}
+	 */
 
 	public void setDataSource(DataSource dataSource) {
 		/*
@@ -48,7 +63,7 @@ public class UserDao {
 		this.jdbcContext.setDataSource(dataSource); // UserDao가 컨테이너 역할을 한다.
 		*/
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
-		this.dataSource = dataSource;
+		//this.dataSource = dataSource;
 	}
 
 	public void add(final User user) throws SQLException { //User는 변경되지 않음으로 final
@@ -92,6 +107,7 @@ public class UserDao {
 	}
 
 	public User get(String id) throws SQLException {
+		/*
 		c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
@@ -109,8 +125,27 @@ public class UserDao {
 		c.close();
 
 		if (user == null)
-			throw new IllegalArgumentException();
+			throw new EmptyResultDataAccessException();
 		return user;
+		 */
+		/*
+		return this.jdbcTemplate.queryForObject("select * from users where id = ?",
+				new Object[]{id}, //SQL에 바인딩할 파라미터 값 //가변인자 대신 배열 사용
+				new RowMapper<User>() { //바인딩할 값들
+					@Override
+					public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+						User user = new User();
+						user.setId(rs.getString("id"));
+						user.setName(rs.getString("name"));
+						user.setPassword(rs.getString("password"));
+						return user;
+					}
+				});
+
+		 */
+		return this.jdbcTemplate.queryForObject("select * from users where id = ?",
+				new Object[]{id},
+				this.userMapper);
 	}
 
 	/**
@@ -223,5 +258,23 @@ public class UserDao {
 		);
 		 */
 		return this.jdbcTemplate.queryForInt("select count(*) from users");
+	}
+
+	public List<User> getAll() {
+		/*
+		return this.jdbcTemplate.query("select * from users order by id",
+		new RowMapper<User>() {
+			@Override
+			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+				User user = new User();
+				user.setId(rs.getString("id"));
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				return user;
+			}
+		});
+		 */
+		return this.jdbcTemplate.query("select * from users order by id",
+				this.userMapper);
 	}
 }
