@@ -1,6 +1,6 @@
 package factory;
 
-import dao.UserDao;
+import dao.UserDaoJdbc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
@@ -16,9 +16,9 @@ public class DataFactory {
         return dataSource;
     }
     @Bean
-    public UserDao userDao(){
-        UserDao userDao = new UserDao();
-        userDao.setDataSource(dataSource());
-        return userDao;
+    public UserDaoJdbc userDao(){
+        UserDaoJdbc userDaoJdbc = new UserDaoJdbc();
+        userDaoJdbc.setDataSource(dataSource());
+        return userDaoJdbc;
     }
 }
