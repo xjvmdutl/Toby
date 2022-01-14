@@ -8,6 +8,8 @@ public class User {
 	private static final int SILVER = 2;
 	private static final int GOLD = 3;
 	*/
+
+
 	String id;
 	String name;
 	String password;
