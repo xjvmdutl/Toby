@@ -10,14 +10,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.jta.UserTransactionAdapter;
 import service.UserService;
+import test.UserServiceTest.TestUserService.TestUserServiceException;
 
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static service.UserService.MIN_LOGCOUNT_FOR_SILVER;
 import static service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
@@ -26,12 +32,35 @@ import static service.UserService.MIN_RECOMMEND_FOR_GOLD;
 @ContextConfiguration(locations = "/application.xml")
 public class UserServiceTest {
 
+    static class TestUserService extends UserService{ //테스트용 클래스임으로 내부 클래스로 만든다.
+        static class TestUserServiceException extends RuntimeException{
+
+        }
+        private String id;
+        private TestUserService(String id){ //예외를 발생시킬 User 오브젝트의 id지정 가능
+            this.id = id;
+        }
+        @Override
+        protected void upgradeLevel(User user) {
+            if(user.getId().equals(this.id))  //지정한 Id의 user 오브젝트가 발견된면 예외를 발생시켜 작업 중지
+                throw new TestUserServiceException();
+            super.upgradeLevel(user);
+        }
+    }
 
     @Autowired
     UserService userService;
 
     @Autowired
     UserDao userDao;
+
+    @Autowired
+    PlatformTransactionManager transactionManager;
+
+    /*
+    @Autowired
+    DataSource dataSource;
+    */
 
     List<User> users;
 
@@ -54,7 +83,7 @@ public class UserServiceTest {
 
 
     @Test
-    public void upgradeLevels(){
+    public void upgradeLevels() throws Exception{
         userDao.deleteAll();
         for(User user : users)
             userDao.add(user);
@@ -67,11 +96,11 @@ public class UserServiceTest {
         checkLevel(users.get(3), Level.GOLD);
         checkLevel(users.get(4), Level.GOLD);
         */
-        checkLevel(users.get(0), false);
-        checkLevel(users.get(1), true);
-        checkLevel(users.get(2), false);
-        checkLevel(users.get(3), true);
-        checkLevel(users.get(4), false);
+        checkLevelUpgraded(users.get(0), false);
+        checkLevelUpgraded(users.get(1), true);
+        checkLevelUpgraded(users.get(2), false);
+        checkLevelUpgraded(users.get(3), true);
+        checkLevelUpgraded(users.get(4), false);
     }
 
     @Test
@@ -97,12 +126,33 @@ public class UserServiceTest {
         assertThat(userUpdate.getLevel(), is(expectedLevel));
     }
     */
-    private void checkLevel(User user, boolean upgraded) {
+    private void checkLevelUpgraded(User user, boolean upgraded) {
         User userUpdate = userDao.get(user.getId());
         if(upgraded) //업데이트가 일어났는지 확인
             assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
         else
             assertThat(userUpdate.getLevel(), is(user.getLevel()));
+    }
+
+    @Test
+    public void upgradeAllOrNothing() throws Exception {
+        UserService testUserService = new TestUserService(users.get(3).getId());
+        testUserService.setUserDao(this.userDao);
+        //testUserService.setDataSource(this.dataSource);
+        testUserService.setTransactionManager(transactionManager); //수동 DI
+        userDao.deleteAll();
+        for(User user : users){
+            userDao.add(user);
+        }
+        try{
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected"); //업그레이드중에 예외가 발생하지 않았을경우 fail을 타서 오류가 발생하게 된다.
+        }catch (TestUserServiceException e){
+
+        }
+
+
+        checkLevelUpgraded(users.get(1),false); //예외가 발생하였는데 값이 변경되었나 확인
     }
 
     public static void main(String[] args)  {

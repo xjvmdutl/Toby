@@ -16,6 +16,7 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import service.UserService;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/application.xml")
 public class UserDaoTest {
+
 
     @Autowired
     UserDao dao;
@@ -45,6 +47,8 @@ public class UserDaoTest {
         user2 = new User("leegw700", "이길원", "springno2", Level.SILVER, 55, 0);
         user3 = new User("bumjin", "박범진", "springno3", Level.GOLD, 100, 40);
     }
+
+
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         JUnitCore.main("test.UserDaoTest");
@@ -161,6 +165,8 @@ public class UserDaoTest {
         User user2Update = dao.get(user2.getId());
         checkSameUser(user2,user2Update);
     }
+
+
 
     private void checkSameUser(User user1, User user2) {
         assertThat(user1.getId(),is(user2.getId()));
