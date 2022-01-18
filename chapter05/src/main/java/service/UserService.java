@@ -5,15 +5,28 @@ import entity.Level;
 import entity.User;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Properties;
 
 public class UserService {
 
@@ -21,6 +34,12 @@ public class UserService {
     public static final int MIN_RECOMMEND_FOR_GOLD = 30;
 
     UserDao userDao;
+
+    private MailSender mailSender;
+
+    public void setMailSender(MailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     PlatformTransactionManager transactionManager;
 
@@ -158,15 +177,48 @@ public class UserService {
         }
     }
 
-        protected void upgradeLevel(User user) {
+    protected void upgradeLevel(User user) {
         /*
          * if(user.getLevel() == Level.BASIC) user.setLevel(Level.SILVER);
          * else if(user.getLevel() == Level.SILVER) user.setLevel(Level.GOLD);
          *
          */
         user.upgradeLevel();
-
         userDao.update(user);
+        sendUpgradeEMail(user);//업그레이드시 USER에게 EMail을 전송
+    }
+
+    private void sendUpgradeEMail(User user) {
+        /*
+        //해당 코드는 테스트 코드를 태워도, 메일 서버가 올라가 있지 않아도 실행되어 예외가 발생한다.
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "mail.ksug.org");
+        Session s = Session.getInstance(props, null);
+
+        MimeMessage message = new MimeMessage(s);
+        try {
+            message.setFrom(new InternetAddress("useradmin@ksug.org"));
+            message.addRecipient(Message.RecipientType.TO,
+                    new InternetAddress(user.getEmail()));
+            message.setSubject("Upgrade 안내");
+            message.setText("사용자님의 등급이 " + 1 + "로 업그레이드 되었습니다.");
+            Transport.send(message);
+        } catch (AddressException e) {
+            throw new RuntimeException();
+        } catch (MessagingException e) {
+            throw new RuntimeException();
+        }
+         */
+        //메일 발송기능 추상화
+        //JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        //mailSender.setHost("mail.server.com");
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(user.getEmail());
+        mailMessage.setFrom("useradmin@ksug.org");
+        mailMessage.setSubject("upgrade 안내");
+        mailMessage.setText("사용자님 등급이 업그레이드 되었습니다");
+
+        this.mailSender.send(mailMessage); //DI 적용
     }
 
     private boolean canUpgradeLevel(User user) {

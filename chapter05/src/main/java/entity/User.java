@@ -19,17 +19,19 @@ public class User {
 	int login; //로그인 횟수
 	int recommend; //추천수
 
-	public User(String id, String name, String password, Level level, int login, int recommend) {
+	String email;
+	public User(){
+
+	}
+	public User(String id, String name, String password, Level level, int login, int recommend, String email) {
+		super();
 		this.id = id;
 		this.name = name;
 		this.password = password;
 		this.level = level;
 		this.login = login;
 		this.recommend = recommend;
-	}
-
-	public User(){
-
+		this.email = email;
 	}
 
 	public String getId() {
@@ -80,7 +82,15 @@ public class User {
 		this.recommend = recommend;
 	}
 
-    public void upgradeLevel() {
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void upgradeLevel() {
 		Level nextLevel = this.level.nextLevel();
 		if(nextLevel == null){
 			throw new IllegalArgumentException(this.level + "은 업그레이드가 불가능 합니다.");

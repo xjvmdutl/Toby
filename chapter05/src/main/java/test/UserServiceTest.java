@@ -8,15 +8,17 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.jta.UserTransactionAdapter;
 import service.UserService;
 import test.UserServiceTest.TestUserService.TestUserServiceException;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,8 +31,26 @@ import static service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/application.xml")
+@ContextConfiguration(locations = "/testApplication.xml")
 public class UserServiceTest {
+    //목클래스
+    static class MockMailSender implements MailSender{
+        private List<String> requests = new ArrayList<>(); //전송요청을 보관하였다가 반환하여 준다.
+
+        public List<String> getRequests() {
+            return requests;
+        }
+
+        @Override
+        public void send(SimpleMailMessage simpleMailMessage) throws MailException {
+            requests.add(simpleMailMessage.getTo()[0]); //전송 요청받은 이메일 주소를 저장
+        }
+
+        @Override
+        public void send(SimpleMailMessage[] simpleMailMessages) throws MailException {
+        }
+    }
+
 
     static class TestUserService extends UserService{ //테스트용 클래스임으로 내부 클래스로 만든다.
         static class TestUserServiceException extends RuntimeException{
@@ -55,6 +75,9 @@ public class UserServiceTest {
     UserDao userDao;
 
     @Autowired
+    MailSender mailSender;
+
+    @Autowired
     PlatformTransactionManager transactionManager;
 
     /*
@@ -67,11 +90,11 @@ public class UserServiceTest {
     @Before
     public void setup(){
         this.users = Arrays.asList(
-                new User("bunjin", "박범진", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0),
-                new User("joytouch", "강명성", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
-                new User("erwins", "신승환", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1),
-                new User("madnite1", "이상호", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
-                new User("green", "오규민", "p5", Level.GOLD, 100, Integer.MAX_VALUE)
+                new User("bunjin", "박범진", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0, "widn45@naver.com"),
+                new User("joytouch", "강명성", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0, "widn45@naver.com"),
+                new User("erwins", "신승환", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1, "widn45@naver.com"),
+                new User("madnite1", "이상호", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD, "widn45@naver.com"),
+                new User("green", "오규민", "p5", Level.GOLD, 100, Integer.MAX_VALUE, "widn45@naver.com")
         );
     }
 
@@ -83,10 +106,14 @@ public class UserServiceTest {
 
 
     @Test
+    @DirtiesContext //컨텍스트의 DI설정이 변경됨을 알려준다.
     public void upgradeLevels() throws Exception{
         userDao.deleteAll();
         for(User user : users)
             userDao.add(user);
+
+        MockMailSender mockMailSender = new MockMailSender(); //주입받는 객체를 변경(DI대상 변경)
+        userService.setMailSender(mockMailSender);
 
         userService.upgradeLevels();
         /*
@@ -101,6 +128,12 @@ public class UserServiceTest {
         checkLevelUpgraded(users.get(2), false);
         checkLevelUpgraded(users.get(3), true);
         checkLevelUpgraded(users.get(4), false);
+
+
+        List<String> request = mockMailSender.getRequests();  //Mock오브젝트에 저장된 메일 수신자 목록을 가지고와 업데이트 대상과 일치하는지 확인
+        assertThat(request.size(), is(2));
+        assertThat(request.get(0), is(users.get(1).getEmail()));  
+        assertThat(request.get(1), is(users.get(3).getEmail()));
     }
 
     @Test
@@ -138,6 +171,7 @@ public class UserServiceTest {
     public void upgradeAllOrNothing() throws Exception {
         UserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
+        testUserService.setMailSender(mailSender);
         //testUserService.setDataSource(this.dataSource);
         testUserService.setTransactionManager(transactionManager); //수동 DI
         userDao.deleteAll();
