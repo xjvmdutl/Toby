@@ -12,6 +12,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.List;
 
 public class UserServiceImpl implements UserService{
+    /**
+     * 프록시 : 타깃과 같은 인터페이스를 구현하여 타깃에 부가적인 기능을 부여할수 있다.
+     * 클라이언트는 인터페이스를 통해서만 핵심 기능을 사용하게 만들고, 부가기능 자신도 같은 인터페이스를 구현한 뒤에 자신이 그사이에 끼어든다.
+     * 클라이언트 -> 프록시 -> 타깃
+     *
+     * 데코레이트 패턴 : 타깃에 부가적인 기능을 런타임시 다이나믹하게 부여해주기 위해 프록시를 사용한 패턴
+     *                어느 데코레이터에서 타깃으로 연결될지 코드레벨에서 알수 없다(런타이 시점에 연결되기 때문에)
+     */
 
     public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
     public static final int MIN_RECOMMEND_FOR_GOLD = 30;
