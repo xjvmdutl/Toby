@@ -3,6 +3,7 @@ package test;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
+import handler.TransactionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -21,6 +22,7 @@ import service.UserServiceImpl;
 import service.UserServiceTx;
 import test.UserServiceTest.TestUserService.TestUserServiceException;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -244,18 +246,25 @@ public class UserServiceTest {
         TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
         testUserService.setMailSender(mailSender);
-
+        /*
         UserServiceTx userServiceTx = new UserServiceTx();
         userServiceTx.setTransactionManager(transactionManager);
         userServiceTx.setUserService(testUserService);
         //testUserService.setTransactionManager(transactionManager); //수동 DI
-
+        */
+        TransactionHandler txHandler = new TransactionHandler();
+        txHandler.setTarget(testUserService);
+        txHandler.setTransactionManager(transactionManager);
+        txHandler.setPattern("upgradeLevels");
+        UserService txUserService = (UserService) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class[]{UserService.class}, txHandler
+        );
         userDao.deleteAll();
         for(User user : users){
             userDao.add(user);
         }
         try{
-            userServiceTx.upgradeLevels();
+            txUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         }catch (TestUserServiceException e){
 
