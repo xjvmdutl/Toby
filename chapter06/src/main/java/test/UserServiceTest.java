@@ -10,6 +10,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,6 +18,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import service.TxProxyFactoryBean;
 import service.UserService;
 import service.UserServiceImpl;
 import service.UserServiceTx;
@@ -137,6 +139,8 @@ public class UserServiceTest {
     @Autowired
     PlatformTransactionManager transactionManager;
 
+    @Autowired
+    ApplicationContext context; //팩토리 빈을 가지고 오기위해 선언
 
     List<User> users;
 
@@ -242,6 +246,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DirtiesContext //Context 무효화 어노테이션
     public void upgradeAllOrNothing() throws Exception {
         TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
@@ -252,6 +257,7 @@ public class UserServiceTest {
         userServiceTx.setUserService(testUserService);
         //testUserService.setTransactionManager(transactionManager); //수동 DI
         */
+        /*
         TransactionHandler txHandler = new TransactionHandler();
         txHandler.setTarget(testUserService);
         txHandler.setTransactionManager(transactionManager);
@@ -259,6 +265,20 @@ public class UserServiceTest {
         UserService txUserService = (UserService) Proxy.newProxyInstance(
                 getClass().getClassLoader(), new Class[]{UserService.class}, txHandler
         );
+         */
+        /**
+         *  장점과 한계 : 부가기능을 가진 프록시를 생성하는 팩토리 빈을 만들어 두면 타깃을 타입에 상관없이 재사용이 가능하다.
+         *  다미나믹 프록시로 인터페이스를 구현한 프록시 클래스를 일일이 만들어야하는 번거로움을 해결하였고, 하나의 핸들러 메소드를 구현하는 것만으로
+         *  많은 메소드에 부가기능을 제공할 수 있으므로 부가기능 코드의 중복문제도 해결하였다.
+         *  단, 만약 target 클래스가 여러개라면, 이를 설정하는 설정파일의 코드도 기하급수적으로 늘어난다(문제점1)
+         *  TransactionHandler 오브젝트가 프로시 펙토리 빈 갯수만큼 만들어 지는 문제점도 존재한다(문제점2)
+         *      트랜잭션 부가기능을 제공하는 동일한 코드임에도 타깃오브젝트가 달라지면 새로운 transactionHandler 오브젝트를 만들어야 한다.
+         *
+         */
+        TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);
+        txProxyFactoryBean.setTarget(testUserService); //테스트용 타깃 주입
+        UserService txUserService = (UserService) txProxyFactoryBean.getObject();
+
         userDao.deleteAll();
         for(User user : users){
             userDao.add(user);
@@ -269,8 +289,6 @@ public class UserServiceTest {
         }catch (TestUserServiceException e){
 
         }
-
-
         checkLevelUpgraded(users.get(1),false);
     }
 

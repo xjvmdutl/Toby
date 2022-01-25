@@ -5,13 +5,19 @@
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" >
 
     <bean id="connectionMaker" class="connectionMaker.DConnectionMaker" />
-
+    <!--
     <bean id="userService" class="service.UserServiceTx">
         <property name="transactionManager" ref="transactionManager" />
-        <!--데코레이터-->
-        <!--현재는  UesrService 타입을 오브젝트를 DI받아 트랜잭션을 경계설정 기능을 부여해준다-->
+        &lt;!&ndash;데코레이터&ndash;&gt;
+        &lt;!&ndash;현재는  UesrService 타입을 오브젝트를 DI받아 트랜잭션을 경계설정 기능을 부여해준다&ndash;&gt;
         <property name="userService" ref="userServiceImpl" />
-
+    </bean>
+    -->
+    <bean id="userService" class="service.TxProxyFactoryBean">
+        <property name="target" ref="userServiceImpl" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="pattern" value="upgradeLevels" />
+        <property name="serviceInterface" value="service.UserService" />
     </bean>
 
     <bean id="userServiceImpl" class="service.UserServiceImpl">
