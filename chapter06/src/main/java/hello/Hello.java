@@ -1,4 +1,4 @@
-package helllo;
+package hello;
 
 public interface Hello {
     String sayHello(String name);

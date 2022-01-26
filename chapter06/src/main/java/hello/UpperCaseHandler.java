@@ -1,8 +1,7 @@
-package helllo;
+package hello;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Locale;
 
 public class UpperCaseHandler implements InvocationHandler {
     /*

@@ -1,4 +1,4 @@
-package helllo;
+package hello;
 
 public class HelloTarget implements Hello{
     @Override

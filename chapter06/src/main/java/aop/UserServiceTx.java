@@ -1,11 +1,12 @@
-package service;
+package aop;
 
 import entity.User;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import service.UserService;
 
-public class UserServiceTx implements UserService{
+public class UserServiceTx implements UserService {
     /**
      * 이렇게 분리하여 얻는 장점
      * 비지니스 로직을 담당하고 있는 UserServiceImpl의 코드를 작성할 때는 트랜잭션과 같은 기술적인 내용에는 신경쓰지 않아도 된다.

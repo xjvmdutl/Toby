@@ -3,12 +3,12 @@ package test;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
-import handler.TransactionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -18,13 +18,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import service.TxProxyFactoryBean;
+import aop.TxProxyFactoryBean;
 import service.UserService;
 import service.UserServiceImpl;
-import service.UserServiceTx;
 import test.UserServiceTest.TestUserService.TestUserServiceException;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -275,9 +273,16 @@ public class UserServiceTest {
          *      트랜잭션 부가기능을 제공하는 동일한 코드임에도 타깃오브젝트가 달라지면 새로운 transactionHandler 오브젝트를 만들어야 한다.
          *
          */
+        /*
         TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);
         txProxyFactoryBean.setTarget(testUserService); //테스트용 타깃 주입
         UserService txUserService = (UserService) txProxyFactoryBean.getObject();
+         */
+        ProxyFactoryBean txProxyFactoryBean =
+                context.getBean("&userService", ProxyFactoryBean.class);
+        txProxyFactoryBean.setTarget(testUserService);
+
+        UserService txUserService = (UserService)txProxyFactoryBean.getObject();
 
         userDao.deleteAll();
         for(User user : users){

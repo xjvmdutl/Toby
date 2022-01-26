@@ -1,6 +1,4 @@
-package helllo;
-
-import java.util.Locale;
+package hello;
 
 public class HelloUpperCase implements Hello{
     Hello hello; //위임할 타깃 오브젝트(여기서는 타깃클래스의 오브젝트인 것은 알지만 다른 프록시를 추가할 수 있으므로 인터페이스로 접근한다)
