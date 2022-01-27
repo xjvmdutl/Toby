@@ -25,16 +25,22 @@
     <bean id="transactionAdvice" class="aop.TransactionAdvice">
         <property name="transactionManager" ref="transactionManager" />
     </bean>
-
+    <!--
     <bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
         <property name="mappedName" value="upgrade*" />
     </bean>
+    -->
+    <bean id="transactionPointcut" class="aop.NameMatchClassMethodPointcut">
+        <property name="mappedClassName" value="*ServiceImpl" />
+<!--        <property name="mappedClassName" value="*NotServiceImpl" />-->
 
+        <property name="mappedName" value="upgrade*" />
+    </bean>
     <bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
         <property name="advice" ref="transactionAdvice" />
         <property name="pointcut" ref="transactionPointcut" />
     </bean>
-
+    <!--
     <bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="target" ref="userServiceImpl" />
         <property name="interceptorNames" >
@@ -43,12 +49,12 @@
             </list>
         </property>
     </bean>
-
-    <bean id="userServiceImpl" class="service.UserServiceImpl">
+    -->
+    <bean id="userService" class="service.UserServiceImpl">
         <property name="userDao" ref="userDao" />
         <property name="mailSender" ref="mailSender" />
     </bean>
-
+    <bean id="testUserService" class="test.UserServiceTest$TestUserServiceImpl" parent="userService" />
     <bean id="mailSender" class="service.DummyMailSender" />
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -64,5 +70,5 @@
         <property name="url" value="jdbc:h2:tcp://localhost/~/toby" />
         <property name="username" value="sa" />
     </bean>
-
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 </beans>

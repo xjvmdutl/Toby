@@ -5,6 +5,8 @@ import hello.UpperCaseHandler;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
+import org.springframework.aop.ClassFilter;
+import org.springframework.aop.Pointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
@@ -84,6 +86,52 @@ public class DynamicProxyTest {
         assertThat(proxiedHello.sayThankYou("Toby"), is("Thank You Toby"));//포인트컷 선정조건과 맞지 않기 때문에 부가기능 제공 X
     }
 
+    @Test
+    public void classNamePointcutAdvisor(){
+        //포인트컷 준비
+        /**
+         * 학습 테스트
+         * 포인트컷에 클레스 선택기능 확장
+         *
+         */
+        NameMatchMethodPointcut classMethodPointcut = new NameMatchMethodPointcut(){
+          public ClassFilter getClassFilter(){
+              return new ClassFilter() {
+                  @Override
+                  public boolean matches(Class<?> clazz) {
+                      return clazz.getSimpleName().startsWith("HelloT");//클래스 명이 HelloT로 시작하는 것만 선정
+                  }
+              };
+          }
+        };
+        classMethodPointcut.setMappedName("sayH*");
+
+        checkAdviced(new HelloTarget(), classMethodPointcut, true); //적용 클래스
+
+        class HelloWorld extends HelloTarget{};
+        checkAdviced(new HelloWorld(), classMethodPointcut, false); //적용클래스 아니다
+
+        class HelloToby extends HelloTarget{};
+        checkAdviced(new HelloToby(), classMethodPointcut, true);
+    }
+
+    private void checkAdviced(Object target, Pointcut pointcut, boolean adviced) {
+        ProxyFactoryBean pfbean = new ProxyFactoryBean();
+        pfbean.setTarget(target);
+        pfbean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+        Hello proxiedHello = (Hello) pfbean.getObject();
+
+        if(adviced){
+            assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
+            assertThat(proxiedHello.sayHi("Toby"), is("HI TOBY"));
+            assertThat(proxiedHello.sayThankYou("Toby"), is("Thank You Toby"));
+        }else{
+            assertThat(proxiedHello.sayHello("Toby"), is("Hello Toby"));
+            assertThat(proxiedHello.sayHi("Toby"), is("Hi Toby"));
+            assertThat(proxiedHello.sayThankYou("Toby"), is("Thank You Toby"));
+        }
+    }
+
 
     static class UppercaseAdvice implements MethodInterceptor {
 
@@ -127,4 +175,5 @@ public class DynamicProxyTest {
             return "Thank You " + name;
         }
     }
+
 }

@@ -21,7 +21,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import aop.TxProxyFactoryBean;
 import service.UserService;
 import service.UserServiceImpl;
-import test.UserServiceTest.TestUserService.TestUserServiceException;
+import test.UserServiceTest.TestUserServiceImpl.TestUserServiceException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,14 +57,13 @@ public class UserServiceTest {
     }
 
 
-    static class TestUserService extends UserServiceImpl {
+    static class TestUserServiceImpl extends UserServiceImpl { //포인트컷의 클래스 필터에 선정되도록 이름 변경
         static class TestUserServiceException extends RuntimeException{
 
         }
-        private String id;
-        private TestUserService(String id){ //예외를 발생시킬 User 오브젝트의 id지정 가능
-            this.id = id;
-        }
+        private String id = "madnite1";
+       /* private TestUserServiceImpl(String id){ //예외를 발생시킬 User 오브젝트의 id지정 가능
+        }*/
         @Override
         protected void upgradeLevel(User user) {
             if(user.getId().equals(this.id))
@@ -126,7 +125,10 @@ public class UserServiceTest {
     
     
     @Autowired
-    UserServiceImpl userServiceImpl;
+    UserService userService;
+
+    @Autowired
+    UserService testUserService;
 
     @Autowired
     UserDao userDao;
@@ -155,7 +157,7 @@ public class UserServiceTest {
 
     @Test
     public void bean(){
-        assertThat(this.userServiceImpl,is(notNullValue()));
+        assertThat(this.testUserService,is(notNullValue()));
     }
 
 
@@ -225,8 +227,8 @@ public class UserServiceTest {
         User userWithOutLevel = users.get(0);
         userWithOutLevel.setLevel(null);
 
-        userServiceImpl.add(userWithLevel);
-        userServiceImpl.add(userWithOutLevel);
+        userService.add(userWithLevel);
+        userService.add(userWithOutLevel);
 
         User userWithLevelRead = userDao.get(userWithLevel.getId());
         User userWithOutLevelRead = userDao.get(userWithOutLevel.getId());
@@ -244,11 +246,11 @@ public class UserServiceTest {
     }
 
     @Test
-    @DirtiesContext //Context 무효화 어노테이션
+   // @DirtiesContext //Context 무효화 어노테이션
     public void upgradeAllOrNothing() throws Exception {
-        TestUserService testUserService = new TestUserService(users.get(3).getId());
+     /*   TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
-        testUserService.setMailSender(mailSender);
+        testUserService.setMailSender(mailSender);*/
         /*
         UserServiceTx userServiceTx = new UserServiceTx();
         userServiceTx.setTransactionManager(transactionManager);
@@ -278,25 +280,28 @@ public class UserServiceTest {
         txProxyFactoryBean.setTarget(testUserService); //테스트용 타깃 주입
         UserService txUserService = (UserService) txProxyFactoryBean.getObject();
          */
-        ProxyFactoryBean txProxyFactoryBean =
+        /*ProxyFactoryBean txProxyFactoryBean =
                 context.getBean("&userService", ProxyFactoryBean.class);
         txProxyFactoryBean.setTarget(testUserService);
 
         UserService txUserService = (UserService)txProxyFactoryBean.getObject();
-
+*/
         userDao.deleteAll();
         for(User user : users){
             userDao.add(user);
         }
         try{
-            txUserService.upgradeLevels();
+            testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         }catch (TestUserServiceException e){
 
         }
         checkLevelUpgraded(users.get(1),false);
     }
-
+    @Test
+    public void advisorAutoProxyCreator(){
+        assertThat(testUserService, is(java.lang.reflect.Proxy.class)); //프록시로 구현된 클래스는 Proxy 클래스의 하위클래스 이기 떄문에 성공해야한다.
+    }
     public static void main(String[] args)  {
         JUnitCore.main("test.UserServiceTest");
     }
