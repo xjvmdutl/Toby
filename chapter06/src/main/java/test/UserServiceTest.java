@@ -21,7 +21,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import aop.TxProxyFactoryBean;
 import service.UserService;
 import service.UserServiceImpl;
-import test.UserServiceTest.TestUserServiceImpl.TestUserServiceException;
+import test.UserServiceTest.TestUserService.TestUserServiceException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +57,7 @@ public class UserServiceTest {
     }
 
 
-    static class TestUserServiceImpl extends UserServiceImpl { //포인트컷의 클래스 필터에 선정되도록 이름 변경
+    static class TestUserService extends UserServiceImpl { //포인트컷의 클래스 필터에 선정되도록 이름 변경
         static class TestUserServiceException extends RuntimeException{
 
         }
