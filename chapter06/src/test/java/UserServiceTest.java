@@ -1,5 +1,3 @@
-package test;
-
 import dao.UserDao;
 import entity.Level;
 import entity.User;
@@ -8,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -18,10 +15,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import aop.TxProxyFactoryBean;
 import service.UserService;
 import service.UserServiceImpl;
-import test.UserServiceTest.TestUserService.TestUserServiceException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,11 +51,11 @@ public class UserServiceTest {
         }
     }
 
+    static class TestUserServiceException extends RuntimeException{
 
+    }
     static class TestUserService extends UserServiceImpl { //포인트컷의 클래스 필터에 선정되도록 이름 변경
-        static class TestUserServiceException extends RuntimeException{
 
-        }
         private String id = "madnite1";
        /* private TestUserServiceImpl(String id){ //예외를 발생시킬 User 오브젝트의 id지정 가능
         }*/
@@ -69,6 +64,14 @@ public class UserServiceTest {
             if(user.getId().equals(this.id))
                 throw new TestUserServiceException();
             super.upgradeLevel(user);
+        }
+
+        @Override
+        public List<User> getAll() {
+            for(User user : super.getAll()){// 읽기 전용으로 동작하는지 학습테스트를 진행한다.
+                super.update(user); //강제로 쓰기동작을 시킨다.(읽기전용이므로 에러 발생)
+            }
+            return null; //별 의미없는 값이다
         }
     }
 
@@ -302,7 +305,17 @@ public class UserServiceTest {
     public void advisorAutoProxyCreator(){
         assertThat(testUserService, is(java.lang.reflect.Proxy.class)); //프록시로 구현된 클래스는 Proxy 클래스의 하위클래스 이기 떄문에 성공해야한다.
     }
-    public static void main(String[] args)  {
-        JUnitCore.main("test.UserServiceTest");
+    @Test //어떤 예외가 발생할지 모르므로 일단 진행
+    public void readOnlyTransactionAttribute(){
+        testUserService.getAll(); //트랜잭션 속성이 제대로 적용이 되었다면 여기서 읽기 전용 속성을 위배하였으로 예외가 발생해야 한다
+        //https://github.com/scratchstudio/toby-spring/issues/7
+        //H2 DB에서 에러가 발생하지 않아서 검색해본 결과 H2 DB에서는 readOnly 설정이 되어있어도 update시 예외가 발생하지 않고 성공한다.
     }
+
+
+    public static void main(String[] args)  {
+        JUnitCore.main("UserServiceTest");
+    }
+
+
 }

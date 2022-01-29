@@ -1,5 +1,3 @@
-package test;
-
 import entity.Level;
 import entity.User;
 import org.junit.Before;

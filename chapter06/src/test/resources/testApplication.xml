@@ -2,11 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.springframework.org/schema/aop
-       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
-
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
 >
 
     <bean id="connectionMaker" class="connectionMaker.DConnectionMaker" />
@@ -26,14 +28,46 @@
         <property name="serviceInterface" value="service.UserService" />
     </bean>
     -->
+    <!--
     <bean id="transactionAdvice" class="aop.TransactionAdvice">
         <property name="transactionManager" ref="transactionManager" />
     </bean>
+    -->
     <!--
-    <bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
-        <property name="mappedName" value="upgrade*" />
+    <bean id="transactionAdvice" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="transactionManager" >
+            <props>
+                <prop key="get*">PROPAGATION_REQUIRED,readOnly,timeout_30</prop>
+                <prop key="update*">PROPAGATION_REQUIRES_NEW,ISOLATION_SERIALIZABLE</prop>
+                <prop key="*">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
     </bean>
     -->
+
+
+    <aop:config>
+        <!--
+        <aop:pointcut id="transactionPointcut" expression="execution(* *..*ServiceImpl.upgrade*(..))" />
+        <aop:advisor advice-ref="transactionAdvice" pointcut-ref="transactionPointcut" />
+          -->
+        <!--<aop:advisor advice-ref="transactionAdvice" pointcut="execution(* *..*ServiceImpl.upgrade*(..))" /> -->
+        <aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)" />
+    <!--<aop:advisor advice-ref="batchTxAdvice" pointcut="execution(a.b.*BatchJob.*.(..))" /> -->
+    </aop:config>
+    <tx:advice id="transactionAdvice" >
+        <tx:attributes>
+            <tx:method name="get*" read-only="true" />
+            <tx:method name="*" />
+        </tx:attributes>
+    </tx:advice>
+
+<!--
+<bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
+    <property name="mappedName" value="upgrade*" />
+</bean>
+-->
 
     <!--<bean id="transactionPointcut" class="aop.NameMatchClassMethodPointcut">
         <property name="mappedClassName" value="*ServiceImpl" />
@@ -61,20 +95,13 @@
         </property>
     </bean>
     -->
-    <aop:config>
-        <!--
-        <aop:pointcut id="transactionPointcut" expression="execution(* *..*ServiceImpl.upgrade*(..))" />
-        <aop:advisor advice-ref="transactionAdvice" pointcut-ref="transactionPointcut" />
-          -->
-        <aop:advisor advice-ref="transactionAdvice" pointcut="execution(* *..*ServiceImpl.upgrade*(..))" />
-    </aop:config>
 
 
     <bean id="userService" class="service.UserServiceImpl">
         <property name="userDao" ref="userDao" />
         <property name="mailSender" ref="mailSender" />
     </bean>
-    <bean id="testUserService" class="test.UserServiceTest$TestUserService" parent="userService" />
+    <bean id="testUserService" class="UserServiceTest$TestUserService" parent="userService" />
     <bean id="mailSender" class="service.DummyMailSender" />
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

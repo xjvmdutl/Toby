@@ -6,6 +6,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import service.UserService;
 
+import java.util.List;
+
 public class UserServiceTx implements UserService {
     /**
      * 이렇게 분리하여 얻는 장점
@@ -44,6 +46,26 @@ public class UserServiceTx implements UserService {
     @Override
     public void add(User user) {
         userService.add(user); //메소드 구현과 위임
+    }
+
+    @Override
+    public User get(String id) {
+        return null;
+    }
+
+    @Override
+    public List<User> getAll() {
+        return null;
+    }
+
+    @Override
+    public void deleteAll() {
+
+    }
+
+    @Override
+    public void update(User user) {
+
     }
 
     @Override

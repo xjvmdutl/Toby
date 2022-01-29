@@ -1,5 +1,3 @@
-package test;
-
 import connectionMaker.CountingConnectionMaker;
 import dao.UserDaoJdbc;
 import entity.User;

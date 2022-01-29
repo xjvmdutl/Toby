@@ -1,5 +1,3 @@
-package test;
-
 import message.Message;
 import message.MessageFactoryBean;
 import org.junit.Test;

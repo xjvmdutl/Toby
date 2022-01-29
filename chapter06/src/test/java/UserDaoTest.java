@@ -1,5 +1,3 @@
-package test;
-
 import dao.UserDao;
 import entity.Level;
 import entity.User;
