@@ -62,7 +62,7 @@
             <tx:method name="*" />
         </tx:attributes>
     </tx:advice>
-
+    <tx:annotation-driven />
 <!--
 <bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
     <property name="mappedName" value="upgrade*" />

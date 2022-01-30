@@ -12,9 +12,14 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import service.UserService;
 import service.UserServiceImpl;
 
@@ -33,6 +38,7 @@ import static service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/testApplication.xml")
+@TransactionConfiguration(defaultRollback=false) //트랜잭션 매니져 빈을 지목하거나 롤백 여부를 설정할 때 사용하는 어노테이션
 public class UserServiceTest {
     static class MockMailSender implements MailSender{
         private List<String> requests = new ArrayList<>();
@@ -305,6 +311,7 @@ public class UserServiceTest {
     public void advisorAutoProxyCreator(){
         assertThat(testUserService, is(java.lang.reflect.Proxy.class)); //프록시로 구현된 클래스는 Proxy 클래스의 하위클래스 이기 떄문에 성공해야한다.
     }
+
     @Test //어떤 예외가 발생할지 모르므로 일단 진행
     public void readOnlyTransactionAttribute(){
         testUserService.getAll(); //트랜잭션 속성이 제대로 적용이 되었다면 여기서 읽기 전용 속성을 위배하였으로 예외가 발생해야 한다
@@ -313,9 +320,100 @@ public class UserServiceTest {
     }
 
 
+   /* @Test
+    public void transactionSync(){
+
+        //각 메소드는 독립적인 트랜잭션에서 수행된다
+        //기존에 진행중인 트랜잭션이 없고 트랜잭션 전파 속성이 Required 로 새로운 트랜잭션이 시작된다.
+        //3개의 트랜잭션을 하나로 통합할 수는 없을까? 세개의 메소드 모두 전파속성이 Required이므로 메소드가 호출되기 전에 트랜잭션만 시작하게만 하면 가능하다.
+        //userService의 메소드를 호출하기 전에 트랜잭션을 미리 시작해 주면 메소드를 새로 만들지 않더라도 3개의 트랜잭션을 묶을 수 있다
+        //DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        //txDefinition.setReadOnly(true); //읽기 전용으로 바꾼다(이 뒤에 실행되는 것은 무시된다)
+        //TransactionStatus txStatus = transactionManager.getTransaction(txDefinition); //트랜잭션 매니저에게 트랜잭션을 요청한다.
+        //기존에 실행된 트랜잭션이 없으니 새로운 트랜잭션을 시작 시키고 트랜잭션 정보를 돌려준다. 또한 다른곳 에서 트랜잭션을 사용할 수 있도록 동기화 한다
+
+        //userService.deleteAll(); //새로운 트랜잭션이 만들어 졌으므로 읽기 전용은 실패해야된다
+        *//*
+        userDao.deleteAll(); //jdbcTemplate를 통해 이미 시작된 트랜잭션이 있다면 자동으로 참여
+        //동일한 결과를 얻는다
+        assertThat(userDao.getCount(), is(0));
+
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
+
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+
+        transactionManager.rollback(txStatus); //강제로 롤백한다
+
+        assertThat(userDao.getCount(), is(0));
+         *//*
+        *//**
+         * 롤백 테스트 : 테스트 내의 모든 DB작업은 하나의 트랜잭션 안에서 동작하게 하고 끝나면 반드시 롤백해버리는 테스트
+         * 장점 : DB에 영향을 주지 않기에 장점이 많다.
+         * DB에 쓰기 작업을 하는 테스트 같은경우 데이터가 변경될 수가 있기때문에 테스트를 할 때만다 테스트 데이터를 초기화 하는 번거로움이 있지만
+         * 롤백 테스트를 진행하면 DB에 영향을 주지 않기때문에 유용하다
+         * 해당 테스트도 실제 User 테이블에 데이터가 있더라도 deleteAll을 사용하여 초기 데이터를 지우고 시작하기 때문에 User에 초기 데이터를 넣어도 의미가 없다
+         * 그러나 롤백테스트를 진행하게 되면 해당 메소드를 호출 하기 전의 상태와 테스트를 성공/실패 하여도 rollback을 하여 데이터가 같음을 보장해준다
+         *//*
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
+
+        try{
+            userService.deleteAll();
+            userService.add(users.get(0));
+            userService.add(users.get(1));
+        }finally {
+            transactionManager.rollback(txStatus); //하나의 트랜잭션으로 통합한 뒤 반드시 끝나면 롤백한다
+        }
+    }*/
+
+    /**
+     * 테스트 메소드 내에서의 @Transactional 을 사용할 수 있다(손쉽게 경계설정이 가능)
+     * 트랜잭션이 필요하지 않는 메소드일 경우  @NotTransactional을 선언하면 된다(적용되어도 상관 없다면 무시 하여도 된다)
+     * 트랜잭션을 전파속성을 NEVER로 설정하여도 똑같이 적용된다(Spring3.0 에서 부터 @NotTransactional 이 제거대상이 되었기에 사용을 지향하지 않는다)
+     * 스프링 개발자들은 비트랜잭션 테스트와 트랜잭션 테스트는 클래스를 별도로 만들어 테스트하기를 권장한다
+     * 통합 테스트 - 단위테스트는 별도의 클래스를 분리하여 테스트를 진행하는데 DB를 사용하는 통합테스트는 롤백테스트로 만드는 것을 권한다.(독립적이고 자동화된 테스트를 만들기 쉽기때문이다)
+     */
+    @Test
+    @Transactional //테스트용 트랜잭션은 테스트가 끝나면 자동으로 Rollback된다.(강제 Rollback을 원치 않을경우는?? @Rollback을 사용한다)
+    @Rollback(value = false) //예외가 발생하지 않는 한 커밋된다 //메소드 레벨에만 적용 가능하다 //만약 전체 메소드에 커밋을 원한다면 @TransactionConfiguration(defaultRollback=false)를 주면 된다
+    public void transactionSync(){
+        userService.deleteAll();
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+    }
+
     public static void main(String[] args)  {
         JUnitCore.main("UserServiceTest");
     }
 
+    /**
+     * Transacnal 어노테이션
+    @Target({ElementType.METHOD, ElementType.TYPE}) //어노테이션을 사용할 대상을 지정한다, (method, type->클래스,인터페이스) 를 지정할 수 있다
+    @Retention(RetentionPolicy.RUNTIME) //어노테이션 정보가 언제까지 유지되는지를 지정(현재는 Runtime)
+    @Inherited //상속을 통해서도 어노테이션 정보를 얻을 수 있다
+    @Documented
+    public @interface Transactional {
+        String value() default "";
+
+        Propagation propagation() default Propagation.REQUIRED;
+
+        Isolation isolation() default Isolation.DEFAULT;
+
+        int timeout() default -1;
+
+        boolean readOnly() default false;
+
+        Class<? extends Throwable>[] rollbackFor() default {};
+
+        String[] rollbackForClassName() default {};
+
+        Class<? extends Throwable>[] noRollbackFor() default {};
+
+        String[] noRollbackForClassName() default {};
+    }
+    */
 
 }
