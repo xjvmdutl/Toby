@@ -18,7 +18,7 @@ public class Calculator {
 
 
     public Integer calcMultiply(String filepath) throws IOException {
-        LineCallback<Integer> lineCallback = new LineCallback<>() {
+        LineCallback<Integer> lineCallback = new LineCallback<Integer>() {
             @Override
             public Integer doSomethingWithLine(String line, Integer value) {
                 return value * Integer.valueOf(line);
