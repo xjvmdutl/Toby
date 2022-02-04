@@ -99,7 +99,13 @@
   </bean>
   <bean id="sqlRegistry" class="sqlservice.HashMapSqlRegistry" />
   !-->
-  <bean id="sqlService" class="sqlservice.DefaultSqlService" />
+ <!-- <bean id="sqlService" class="sqlservice.DefaultSqlService" />-->
+  <bean id="sqlService" class="sqlservice.OxmSqlService" >
+    <property name="unmarshaller" ref="unmarshaller" />
+  </bean>
+  <bean id="unmarshaller" class="org.springframework.oxm.castor.CastorMarshaller" >
+    <property name="mappingLocation" value="/sqlservice/castor/mapping.xml" />
+  </bean>
   <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
     <property name="driverClass" value="org.h2.Driver"/>
     <property name="url" value="jdbc:h2:tcp://localhost/~/toby"/>
