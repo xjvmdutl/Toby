@@ -29,7 +29,7 @@
     </tx:attributes>
   </tx:advice>
   <tx:annotation-driven/>
-  <context:annotation-config/>
+  <!--<context:annotation-config/>-->
   <bean id="userService" class="service.UserServiceImpl">
     <property name="userDao" ref="userDao"/>
     <property name="mailSender" ref="mailSender"/>

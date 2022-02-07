@@ -3,6 +3,7 @@ package test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import configuration.TestApplicationContext;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
@@ -21,8 +22,9 @@ import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+//@ContextConfiguration(locations = "/testApplication.xml") //XML 설정파일을 읽어들이는 UserDaoTest
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/testApplication.xml")
+@ContextConfiguration(classes = TestApplicationContext.class)
 public class UserDaoTest {
 
 

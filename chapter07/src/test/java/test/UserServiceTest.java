@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import static service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
+import configuration.TestApplicationContext;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
@@ -41,7 +42,7 @@ import service.UserServiceImpl;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/testApplication.xml")
+@ContextConfiguration(classes = TestApplicationContext.class)
 @TransactionConfiguration(defaultRollback = false)
 public class UserServiceTest {
     static class TestUserServiceException extends RuntimeException {
