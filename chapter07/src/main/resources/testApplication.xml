@@ -16,7 +16,7 @@
        http://www.springframework.org/schema/jdbc
        http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd"
 >
-
+  <!--
   <bean id="connectionMaker" class="connectionMaker.DConnectionMaker"/>
 
   <aop:config>
@@ -28,25 +28,25 @@
       <tx:method name="*"/>
     </tx:attributes>
   </tx:advice>
+  -->
+<!--
   <tx:annotation-driven/>
+-->
+
   <!--<context:annotation-config/>-->
-  <bean id="userService" class="service.UserServiceImpl">
-    <property name="userDao" ref="userDao"/>
-    <property name="mailSender" ref="mailSender"/>
-  </bean>
-  <bean id="testUserService" class="test.UserServiceTest$TestUserService" parent="userService"/>
-  <bean id="mailSender" class="service.DummyMailSender"/>
 
-  <bean id="transactionManager"
-    class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <property name="dataSource" ref="dataSource"/>
-  </bean>
 
-  <!--<bean id="userDao" class="dao.UserDaoJdbc">
-    <property name="dataSource" ref="dataSource"/>
-    <property name="sqlAdd"
-      value="insert into users(id, name, password, level, login, recommend, email) values(?, ?, ?, ?, ?, ?, ?)"/>
-  </bean>-->
+  <!--
+   <bean id="transactionManager"
+     class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+     <property name="dataSource" ref="dataSource"/>
+   </bean>
+  -->
+   <!--<bean id="userDao" class="dao.UserDaoJdbc">
+     <property name="dataSource" ref="dataSource"/>
+     <property name="sqlAdd"
+       value="insert into users(id, name, password, level, login, recommend, email) values(?, ?, ?, ?, ?, ?, ?)"/>
+   </bean>-->
   <!--
   <bean id="userDao" class="dao.UserDaoJdbc">
     <property name="dataSource" ref="dataSource"/>
@@ -101,35 +101,42 @@
   <bean id="sqlService" class="sqlservice.DefaultSqlService" />
   -->
 
-  <bean id="sqlService" class="sqlservice.OxmSqlService">
+ <!-- <bean id="sqlService" class="sqlservice.OxmSqlService">
     <property name="unmarshaller" ref="unmarshaller"/>
-    <!--<property name="sqlmap" value="classpath:dao/sqlmap.xml" /> -->
+    &lt;!&ndash;<property name="sqlmap" value="classpath:dao/sqlmap.xml" /> &ndash;&gt;
     <property name="sqlRegistry" ref="sqlRegistry"/>
   </bean>
 
   <bean id="unmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocation" value="/sqlservice/castor/mapping.xml"/>
   </bean>
-
-  <!--<bean id="sqlRegistry" class="sqlservice.updatable.ConcurrentHashMapSqlRegistry" /> -->
   <bean id="sqlRegistry" class="sqlservice.updatable.EmbeddedDbSqlRegistry" >
     <property name="dataSource" ref="embeddedDatabase" />
-  </bean>
+  </bean>-->
+  <!--<bean id="sqlRegistry" class="sqlservice.updatable.ConcurrentHashMapSqlRegistry" /> -->
 
+  <!--
   <bean id="userDao" class="dao.UserDaoJdbc">
     <property name="dataSource" ref="dataSource"/>
     <property name="sqlService" ref="sqlService"/>
   </bean>
-
+  <bean id="userService" class="service.UserServiceImpl">
+    <property name="userDao" ref="userDao"/>
+    <property name="mailSender" ref="mailSender"/>
+  </bean>
+  <bean id="testUserService" class="test.UserServiceTest$TestUserService" parent="userService"/>
+  <bean id="mailSender" class="service.DummyMailSender"/>
+  -->
+  <!--
   <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
     <property name="driverClass" value="org.h2.Driver"/>
     <property name="url" value="jdbc:h2:tcp://localhost/~/toby"/>
     <property name="username" value="sa"/>
   </bean>
-
-  <jdbc:embedded-database id="embeddedDatabase" type="H2">
+  -->
+<!--  <jdbc:embedded-database id="embeddedDatabase" type="H2">
     <jdbc:script location="classpath:/sqlRegistrySchema.sql"/>
-  </jdbc:embedded-database>
+  </jdbc:embedded-database>-->
 
-  <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+<!--  <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>-->
 </beans>

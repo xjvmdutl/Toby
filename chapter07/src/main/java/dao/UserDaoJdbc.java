@@ -8,11 +8,15 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import sqlservice.SqlService;
 
-
+//@Component //빈 후보 클래스에게 붙는 어노테이션(자동스캔대상으로 지정되는 메타 어노테이션)
+@Repository //스프링은 해당 어노테이션을 DAO 기능을 제공하는 클래스에 붙이도록 권장한다
 public class UserDaoJdbc implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
@@ -32,13 +36,13 @@ public class UserDaoJdbc implements UserDao {
         this.sqlMap = sqlMap;
     }
     */
-
+    @Autowired //필드위에 @Autowired 붙을경우 스프링은 리플렉션 API를 이용해 제약조건을 우회해서 값을 넣어준다(더이상 수정자 메소드 필요 없다)
     private SqlService sqlService; //모든 DAO에서 서비스 빈을 사용하게 할 것이므로 키이름이 DAO별로 중복되지 않게 해야한다
-
+    /* 수정자 메소드드가 필요가 없다
     public void setSqlService(SqlService sqlService) {
         this.sqlService = sqlService;
     }
-
+    */
     private RowMapper<User> userMapper = new RowMapper<User>() {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -57,7 +61,10 @@ public class UserDaoJdbc implements UserDao {
 
     public UserDaoJdbc() {
     }
-
+    //자동와이어링 이용
+    //스프링은 @Autowired 어노테이션이 붙은 수정자 메소드가 있으면 파라미터 타입을 보고 주입 가능한 타입의 빈을 모두 찾는다
+    //만약 주입가능한 빈이 2개이상 존재한다면 프로퍼티와 동일한 이름의 빈이 있는지를 찾는다
+    @Autowired  
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }

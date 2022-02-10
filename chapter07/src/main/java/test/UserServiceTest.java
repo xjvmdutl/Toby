@@ -5,7 +5,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,11 +12,11 @@ import static org.mockito.Mockito.when;
 import static service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
-import configuration.TestApplicationContext;
+import configuration.AppContext;
+import configuration.TestAppContext;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -26,30 +25,25 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import service.UserService;
 import service.UserServiceImpl;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestApplicationContext.class)
+@ContextConfiguration(classes = {AppContext.class, TestAppContext.class})
 @TransactionConfiguration(defaultRollback = false)
 public class UserServiceTest {
     static class TestUserServiceException extends RuntimeException {
 
     }
 
-    static class TestUserService extends UserServiceImpl {
+    public static class TestUserService extends UserServiceImpl {
 
         private String id = "madnite1";
 
@@ -103,7 +97,7 @@ public class UserServiceTest {
 
 
     @Test
-    @DirtiesContext
+    //@DirtiesContext
     public void upgradeLevels() throws Exception {
         UserServiceImpl userServiceImpl = new UserServiceImpl();
 
@@ -193,7 +187,7 @@ public class UserServiceTest {
 
     @Test
     @Transactional
-    @Rollback(value = false)
+    //@Rollback(value = false)
     public void transactionSync() {
         userService.deleteAll();
         userService.add(users.get(0));

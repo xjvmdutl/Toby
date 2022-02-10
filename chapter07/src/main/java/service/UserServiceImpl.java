@@ -4,17 +4,23 @@ import dao.UserDao;
 import entity.Level;
 import entity.User;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
+@Service("userService")
 public class UserServiceImpl implements UserService {
 
     public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
     public static final int MIN_RECOMMEND_FOR_GOLD = 30;
 
+    @Autowired
     UserDao userDao;
 
+    @Autowired
     private MailSender mailSender;
 
     public void setMailSender(MailSender mailSender) {
