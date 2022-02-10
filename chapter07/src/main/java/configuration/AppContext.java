@@ -30,6 +30,7 @@ import sqlservice.SqlService;
 import sqlservice.updatable.EmbeddedDbSqlRegistry;
 import test.UserServiceTest.TestUserService;
 
+
 @Configuration //DI설정 정보를 담은 클래스
 //@ImportResource("/testApplication.xml") //Java 설정정보에서 XML 설정정보를 가져올수 있게 도와준다
 @EnableTransactionManagement //XML을 전용태그 속성 어려운 문제점을 해결하고자 등장한 어노테이션 //@Enable 로 시작하는 애노테이션으로 많은 전용태그를 대체 가능하다
