@@ -13,7 +13,6 @@ import static service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
 import configuration.AppContext;
-import configuration.TestAppContext;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
@@ -25,8 +24,10 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
@@ -36,8 +37,9 @@ import service.UserServiceImpl;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {AppContext.class, TestAppContext.class})
+@ContextConfiguration(classes = AppContext.class)
 @TransactionConfiguration(defaultRollback = false)
+@ActiveProfiles("test") //test Profile 활성화
 public class UserServiceTest {
     static class TestUserServiceException extends RuntimeException {
 
@@ -75,6 +77,10 @@ public class UserServiceTest {
 
     List<User> users;
 
+    @Autowired
+    DefaultListableBeanFactory bf; //빈 팩토리의 구현클래스중 하나, 대부분의 스프링 컨테이너는 해당 클래스를 이용하여 빈을 등록한다
+    //getBeanDefinitionNames 메소드가 있어 컨테이너에 등록된 모든 빈 이름을 가져올 수 있고, 빈 이름을 이용해 실제 빈과 클레스 정보등도 조회가 가능하다
+    
     @Before
     public void setup() {
         this.users = Arrays.asList(
@@ -193,6 +199,14 @@ public class UserServiceTest {
         userService.add(users.get(0));
         userService.add(users.get(1));
     }
+
+    @Test
+    public void beans(){
+        for(String n : bf.getBeanDefinitionNames()){
+            System.out.println(n + "\t" + bf.getBean(n).getClass().getName());
+        }
+    }
+
 
     public static void main(String[] args) {
         JUnitCore.main("test.UserServiceTest");

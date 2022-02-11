@@ -56,7 +56,7 @@ public class OxmSqlService implements SqlService {
         private Unmarshaller unmarshaller;
         //private final static String DEFAULT_SQLMAP_FILE= "sqlmap.xml";
         //private String sqlmapFile = DEFAULT_SQLMAP_FILE;
-        private Resource sqlmap = new ClassPathResource("sqlmap.xml", UserDao.class); //해당 리소스에 대해 접근할수 있는 추상화된 핸들러 역할이므로 실제 리소스는 아니다.
+        private Resource sqlmap = new ClassPathResource("/sqlmap.xml"); //해당 리소스에 대해 접근할수 있는 추상화된 핸들러 역할이므로 실제 리소스는 아니다.
         //따라서 해당 오브젝트가 만들어 졌다고 해서 실제 리소스가 존재하지 않을 수도 있다.
 
         public void setUnmarshaller(Unmarshaller unmarshaller) {

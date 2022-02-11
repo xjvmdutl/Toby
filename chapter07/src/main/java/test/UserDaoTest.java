@@ -4,7 +4,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import configuration.AppContext;
-import configuration.TestAppContext;
 import dao.UserDao;
 import entity.Level;
 import entity.User;
@@ -20,12 +19,14 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 //@ContextConfiguration(locations = "/testApplication.xml") //XML 설정파일을 읽어들이는 UserDaoTest
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {AppContext.class, TestAppContext.class})
+@ContextConfiguration(classes = AppContext.class)
+@ActiveProfiles("test") //test Profile 활성화
 public class UserDaoTest {
 
 
