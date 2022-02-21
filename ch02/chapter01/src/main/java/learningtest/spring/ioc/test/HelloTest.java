@@ -1,16 +1,19 @@
-package learningtest;
+package learningtest.spring.ioc.test;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-import hello.Hello;
-import hello.StringPrinter;
+import learningtest.spring.ioc.bean.Hello;
+import learningtest.spring.ioc.bean.StringPrinter;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
 public class HelloTest {
@@ -58,4 +61,23 @@ public class HelloTest {
         assertThat(ac.getBeanFactory().getBeanDefinitionCount(),
             is(2)); //Ioc 컨테이너에 등록된 빈 설정 메타정보를 가지고 올 수 있다
     }
+
+    @Test
+    public void genericApplicationContext(){
+        /*
+        GenericApplicationContext ac = new GenericApplicationContext();
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(ac);
+        reader.loadBeanDefinitions("learningtest/spring/ioc/GenericApplicationContext.xml");
+
+        //여러 접두어를 이용해 구체적인 리소스 타입을 지정해도 된다
+        ac.refresh(); // 모든 메타정보가 등록이 완료 되었으니 애플리케이션 컨테이너를 초기화 하는 명령
+        */
+        GenericXmlApplicationContext ac = new GenericXmlApplicationContext(
+            "learningtest/spring/ioc/GenericApplicationContext.xml");
+        Hello hello = ac.getBean("hello" , Hello.class);
+        hello.print();
+
+        assertThat(ac.getBean("printer").toString(), is("Hello Spring"));
+    }
 }
+

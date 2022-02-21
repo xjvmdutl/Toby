@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+  <bean id="printer" class="learningtest.spring.ioc.bean.StringPrinter" />
+
+  <bean id="hello" class="learningtest.spring.ioc.bean.Hello"> <!-- 자식 컨텐스트에도 이름이 같은 빈이 존재한다면 자식컨텍스트가 우선권을 가진다 -->
+    <property name="name" value="Parent" />
+    <property name="printer" ref="printer" />
+  </bean>
+
+</beans>

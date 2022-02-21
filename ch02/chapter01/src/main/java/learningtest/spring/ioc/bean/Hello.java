@@ -1,4 +1,4 @@
-package hello;
+package learningtest.spring.ioc.bean;
 
 public class Hello {
     String name;

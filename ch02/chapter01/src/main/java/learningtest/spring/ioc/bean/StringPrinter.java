@@ -1,4 +1,4 @@
-package hello;
+package learningtest.spring.ioc.bean;
 
 public class StringPrinter implements Printer{
 
