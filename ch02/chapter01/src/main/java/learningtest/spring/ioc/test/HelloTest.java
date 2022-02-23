@@ -2,17 +2,21 @@ package learningtest.spring.ioc.test;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import learningtest.spring.ioc.bean.AnnotatedHello;
+import learningtest.spring.ioc.bean.AnnotationHelloConfig;
 import learningtest.spring.ioc.bean.Hello;
 import learningtest.spring.ioc.bean.StringPrinter;
+import learningtest.spring.ioc.config.HelloConfig;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
@@ -63,7 +67,7 @@ public class HelloTest {
     }
 
     @Test
-    public void genericApplicationContext(){
+    public void genericApplicationContext() {
         /*
         GenericApplicationContext ac = new GenericApplicationContext();
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(ac);
@@ -74,10 +78,37 @@ public class HelloTest {
         */
         GenericXmlApplicationContext ac = new GenericXmlApplicationContext(
             "learningtest/spring/ioc/GenericApplicationContext.xml");
-        Hello hello = ac.getBean("hello" , Hello.class);
+        Hello hello = ac.getBean("hello", Hello.class);
         hello.print();
 
         assertThat(ac.getBean("printer").toString(), is("Hello Spring"));
     }
+
+    @Test
+    public void simpleBeanScanning() {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AnnotatedHello.class);
+        AnnotatedHello hello = ctx
+            .getBean("myAnnotatedHello", AnnotatedHello.class);
+
+        assertThat(hello, is(notNullValue()));
+
+    }
+    @Test
+    public void configurationTest() {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(
+            AnnotationHelloConfig.class);
+        AnnotatedHello hello = applicationContext
+            .getBean("annotatedHello", AnnotatedHello.class);
+        assertThat(hello, is(notNullValue()));
+        AnnotationHelloConfig config = applicationContext
+            .getBean("annotationHelloConfig", AnnotationHelloConfig.class); //설정을 담은 자바코드에 해당되는 클래스도 빈으로 등록된다
+        assertThat(config, is(notNullValue()));
+
+        //assertThat(config.annotatedHello(), is(not(sameInstance(hello)))); //매번 새로운 객체를 만들도록 annotatedHello()가 동작하게 하였지만 새로 생기지 않는다
+        assertThat(config.annotatedHello(), is(sameInstance(hello))); //해당사실을 통해 자바코드를 이용한 빈등록에 사용되는 클래스는 그저 평법한 자바코드처럼 동작하지 않는걸 알수 있다.
+        //빈 스코프 주기는 기본적으로 Singleton 형식으므로 컨테이너 안에서 단 한번만 만들어 져야 한다.
+    }
+
+
 }
 

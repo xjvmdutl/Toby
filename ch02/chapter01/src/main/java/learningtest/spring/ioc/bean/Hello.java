@@ -1,6 +1,7 @@
 package learningtest.spring.ioc.bean;
 
 public class Hello {
+
     String name;
     Printer printer;
 
@@ -16,6 +17,7 @@ public class Hello {
             어떤 방식으로 출력하도록 변경해도 Hello 코드는 수정할 필요 X
         */
     }
+
 
     public void setName(String name) {
         //인사 문구에 쓸 이름을 String 값으로 DI 받을수 있다
