@@ -19,19 +19,19 @@ public class HelloConfig {
 
     @Bean
     private Hello hello(){ //외부에서 호출하지 못하도록 private 선언
-        Hello hello = new Hello();
-        hello.setName("Spring");
+        Hello hello = new Hello("Spring", this.printer);
+        //hello.setName("Spring");
         //hello.setPrinter(printer());
-        hello.setPrinter(this.printer);
+        //hello.setPrinter(this.printer);
         return hello;
     }
 
     @Bean
     private Hello hello2(){
-        Hello hello = new Hello();
-        hello.setName("Spring2");
+        Hello hello = new Hello("Spring2", this.printer);
+        //hello.setName("Spring2");
         //hello.setPrinter(printer());
-        hello.setPrinter(this.printer);
+        //hello.setPrinter(this.printer);
         return hello;
     }
 

@@ -109,6 +109,27 @@ public class HelloTest {
         //빈 스코프 주기는 기본적으로 Singleton 형식으므로 컨테이너 안에서 단 한번만 만들어 져야 한다.
     }
 
+    @Test
+    public void constructContext() {
+        ApplicationContext ac = new GenericXmlApplicationContext(
+            "learningtest/spring/ioc/ConstructorInjection.xml");
+        Hello hello = ac.getBean("hello", Hello.class);
+        hello.print();
+
+        assertThat(ac.getBean("printer").toString(), is("Hello Spring"));
+    }
+
+    @Test
+    public void autowiredContext() {
+
+        ApplicationContext ac = new GenericXmlApplicationContext(
+            "learningtest/spring/ioc/Autowired.xml");
+        Hello hello = ac.getBean("hello", Hello.class);
+        hello.print();
+
+        assertThat(ac.getBean("printer").toString(), is("Hello Spring"));
+    }
+
 
 }
 

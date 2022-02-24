@@ -1,9 +1,19 @@
 package learningtest.spring.ioc.bean;
 
+import javax.annotation.Resource;
+
 public class Hello {
 
     String name;
     Printer printer;
+
+    public Hello() {
+    }
+
+    public Hello(String name, Printer printer) {
+        this.name = name;
+        this.printer = printer;
+    }
 
     public String sayHello(){ //프로퍼티로 DI 받은 이름을 이용해 간단한 인사문구 만들기
         return "Hello " + name;
@@ -24,6 +34,12 @@ public class Hello {
         this.name = name;
     }
 
+
+    public Printer getPrinter() {
+        return printer;
+    }
+
+    @Resource(name = "printer")
     public void setPrinter(Printer printer) {
         //출력을 위해 사용할 Printer 인터페이스를 구현한 오브젝트를 DI 받는다
         this.printer = printer;
