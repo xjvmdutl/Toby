@@ -34,6 +34,9 @@ public class Hello {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
 
     public Printer getPrinter() {
         return printer;

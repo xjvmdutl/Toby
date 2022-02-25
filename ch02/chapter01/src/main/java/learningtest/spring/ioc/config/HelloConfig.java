@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 //@Configuration //@Configuration 어노테이션이 붙어있지 않더라도 @Bean이 붙어 있는 메소드는 빈으로 등록될수 있다.
 // 단, @Configuration 이 없다면, 해당 빈에 의존되어 있는 다른 빈을 호출할때 Singleton 빈이 호출되지 않고 일반적이 메소드가 호출된다
 //new로 매번 새로운 객체가 만들어짐..
+@Configuration
 public class HelloConfig {
     private Printer printer;
 
@@ -19,7 +20,7 @@ public class HelloConfig {
 
     @Bean
     private Hello hello(){ //외부에서 호출하지 못하도록 private 선언
-        Hello hello = new Hello("Spring", this.printer);
+        Hello hello = new Hello("Spring", printer()); // 수동 DIs
         //hello.setName("Spring");
         //hello.setPrinter(printer());
         //hello.setPrinter(this.printer);

@@ -1,8 +1,8 @@
-package learningtest.spring.ioc.resource;
+package learningtest.spring.ioc.autowired;
 
 import org.springframework.stereotype.Component;
 
-@Component("myPrinter")
+@Component
 public class StringPrinter implements Printer {
 
     private StringBuffer buffer = new StringBuffer();
