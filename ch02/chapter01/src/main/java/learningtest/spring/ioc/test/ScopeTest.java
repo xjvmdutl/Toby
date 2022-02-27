@@ -3,13 +3,29 @@ package learningtest.spring.ioc.test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Resource;
+import javax.inject.Provider;
 import org.junit.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean;
+import org.springframework.beans.factory.config.ServiceLocatorFactoryBean;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockServletConfig;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.stereotype.Component;
 
 public class ScopeTest {
     @Test
@@ -56,7 +72,67 @@ public class ScopeTest {
 
     }
 
+    @Test
+    public void objectFactory() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(PrototypeBean.class, ObjectFactoryConfig.class);
+        ObjectFactory<PrototypeBean> factoryBeanFactory = ac.getBean("prototypeBeanFactory", ObjectFactory.class);
+
+        Set<PrototypeBean> bean = new HashSet<PrototypeBean>();
+        for(int i=1; i<=4; i++) {
+            bean.add(factoryBeanFactory.getObject());
+            assertThat(bean.size(), is(i));
+        }
+    }
+
+    @Configuration
+    static class ObjectFactoryConfig {
+        @Bean
+        public ObjectFactoryCreatingFactoryBean prototypeBeanFactory() {
+            ObjectFactoryCreatingFactoryBean factoryBean = new ObjectFactoryCreatingFactoryBean();
+            factoryBean.setTargetBeanName("prototypeBean");
+            return factoryBean;
+        }
+    }
+
+    @Test
+    public void serviceLocatorFactoryBean() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(PrototypeBean.class, ServiceLocatorConfig.class);
+        PrototypeBeanFactory factory = ac.getBean(PrototypeBeanFactory.class);
+
+        Set<PrototypeBean> bean = new HashSet<PrototypeBean>();
+        for(int i=1; i<=4; i++) {
+            bean.add(factory.getPrototypeBean());
+            assertThat(bean.size(), is(i));
+        }
+    }
+    interface PrototypeBeanFactory { PrototypeBean getPrototypeBean(); }
+    @Configuration
+    static class ServiceLocatorConfig {
+        @Bean public ServiceLocatorFactoryBean prototypeBeanFactory() {
+            ServiceLocatorFactoryBean factoryBean = new ServiceLocatorFactoryBean();
+            factoryBean.setServiceLocatorInterface(PrototypeBeanFactory.class);
+            return factoryBean;
+        }
+    }
+
+    @Test
+    public void providerTest() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(PrototypeBean.class, ProviderClient.class);
+        ProviderClient client = ac.getBean(ProviderClient.class);
+
+        Set<PrototypeBean> bean = new HashSet<PrototypeBean>();
+        for(int i=1; i<=4; i++) {
+            bean.add(client.prototypeBeanProvider.get());
+            assertThat(bean.size(), is(i));
+        }
+    }
+    static class ProviderClient {
+        @Resource
+        Provider<PrototypeBean> prototypeBeanProvider;
+    }
+
     @Scope("prototype") //프로토타입 빈으로 생성
+    @Component("prototypeBean")
     static class PrototypeBean{
 
     }
